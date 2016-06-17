@@ -15,13 +15,13 @@ class Loader {
 	const CACHE_USE_DEFAULT = 'default';
 
 	public static $cache_modes = array(
-		static::CACHE_NONE,
-		static::CACHE_OBJECT,
-		static::CACHE_TRANSIENT,
-		static::CACHE_SITE_TRANSIENT
+		self::CACHE_NONE,
+		self::CACHE_OBJECT,
+		self::CACHE_TRANSIENT,
+		self::CACHE_SITE_TRANSIENT
 	);
 
-	protected $cache_mode = static::CACHE_TRANSIENT;
+	protected $cache_mode = self::CACHE_TRANSIENT;
 
 	public $locations;
 
@@ -41,7 +41,7 @@ class Loader {
 	 * @param string        $cache_mode
 	 * @return bool|string
 	 */
-	public function render( $file, $data = null, $expires = false, $cache_mode = static::CACHE_USE_DEFAULT ) {
+	public function render( $file, $data = null, $expires = false, $cache_mode = self::CACHE_USE_DEFAULT ) {
 		// Different $expires if user is anonymous or logged in
 		if ( is_array($expires) ) {
 			if ( is_user_logged_in() && isset($expires[1]) ) {
@@ -261,7 +261,7 @@ class Loader {
 		return $twig;
 	}
 
-	public function clear_cache_timber( $cache_mode = static::CACHE_USE_DEFAULT ) {
+	public function clear_cache_timber( $cache_mode = self::CACHE_USE_DEFAULT ) {
 		//_transient_timberloader
 		$object_cache = false;
 		if ( isset($GLOBALS['wp_object_cache']) && is_object($GLOBALS['wp_object_cache']) ) {
@@ -339,7 +339,7 @@ class Loader {
 	 * @param string $cache_mode
 	 * @return bool
 	 */
-	public function get_cache( $key, $group = static::CACHEGROUP, $cache_mode = static::CACHE_USE_DEFAULT ) {
+	public function get_cache( $key, $group = self::CACHEGROUP, $cache_mode = self::CACHE_USE_DEFAULT ) {
 		$object_cache = false;
 
 		if ( isset($GLOBALS['wp_object_cache']) && is_object($GLOBALS['wp_object_cache']) ) {
@@ -370,7 +370,7 @@ class Loader {
 	 * @param string $cache_mode
 	 * @return string|boolean
 	 */
-	public function set_cache( $key, $value, $group = static::CACHEGROUP, $expires = 0, $cache_mode = static::CACHE_USE_DEFAULT ) {
+	public function set_cache( $key, $value, $group = self::CACHEGROUP, $expires = 0, $cache_mode = self::CACHE_USE_DEFAULT ) {
 		$object_cache = false;
 
 		if ( isset($GLOBALS['wp_object_cache']) && is_object($GLOBALS['wp_object_cache']) ) {
