@@ -215,6 +215,20 @@ class Timber {
 	================================ */
 
 	/**
+	 * Get an instance of a Timber Loader
+	 *
+	 * @return Timber\Loader
+	 */
+	public static function get_loader( $caller = false ) {
+		$loader = new Loader($caller);
+
+		// Provide a mechanism for the outside app to provide an alternative loader
+		$loader = apply_filters('timber/loader', $loader, $caller);
+
+		return $loader;
+	}
+
+	/**
 	 * Get context.
 	 *
 	 * @return array
@@ -258,7 +272,7 @@ class Timber {
 			self::init();
 		}
 		$caller = self::get_calling_script_dir();
-		$loader = new Loader($caller);
+		$loader = self::get_loader($caller);
 		$file = $loader->choose_template($filenames);
 		$output = '';
 		if ( is_null($data) ) {
@@ -286,7 +300,7 @@ class Timber {
 	 * @return  bool|string
 	 */
 	public static function compile_string( $string, $data = array() ) {
-		$dummy_loader = new Loader();
+		$dummy_loader = self::get_loader();
 		$twig = $dummy_loader->get_twig();
 		$template = $twig->createTemplate($string);
 		return $template->render($data);
@@ -371,7 +385,7 @@ class Timber {
 	 */
 	public static function get_sidebar_from_php( $sidebar = '', $data ) {
 		$caller = self::get_calling_script_dir();
-		$loader = new Loader();
+		$loader = self::get_loader();
 		$uris = $loader->get_locations($caller);
 		ob_start();
 		$found = false;
