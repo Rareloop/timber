@@ -15,13 +15,13 @@ class Loader {
 	const CACHE_USE_DEFAULT = 'default';
 
 	public static $cache_modes = array(
-		self::CACHE_NONE,
-		self::CACHE_OBJECT,
-		self::CACHE_TRANSIENT,
-		self::CACHE_SITE_TRANSIENT
+		static::CACHE_NONE,
+		static::CACHE_OBJECT,
+		static::CACHE_TRANSIENT,
+		static::CACHE_SITE_TRANSIENT
 	);
 
-	protected $cache_mode = self::CACHE_TRANSIENT;
+	protected $cache_mode = static::CACHE_TRANSIENT;
 
 	public $locations;
 
@@ -41,7 +41,7 @@ class Loader {
 	 * @param string        $cache_mode
 	 * @return bool|string
 	 */
-	public function render( $file, $data = null, $expires = false, $cache_mode = self::CACHE_USE_DEFAULT ) {
+	public function render( $file, $data = null, $expires = false, $cache_mode = static::CACHE_USE_DEFAULT ) {
 		// Different $expires if user is anonymous or logged in
 		if ( is_array($expires) ) {
 			if ( is_user_logged_in() && isset($expires[1]) ) {
@@ -56,7 +56,7 @@ class Loader {
 		if ( false !== $expires ) {
 			ksort($data);
 			$key = md5($file.json_encode($data));
-			$output = $this->get_cache($key, self::CACHEGROUP, $cache_mode);
+			$output = $this->get_cache($key, static::CACHEGROUP, $cache_mode);
 		}
 
 		if ( false === $output || null === $output ) {
@@ -72,7 +72,7 @@ class Loader {
 		}
 
 		if ( false !== $output && false !== $expires && null !== $key ) {
-			$this->set_cache($key, $output, self::CACHEGROUP, $expires, $cache_mode);
+			$this->set_cache($key, $output, static::CACHEGROUP, $expires, $cache_mode);
 		}
 		$output = apply_filters('timber_output', $output);
 		return apply_filters('timber/output', $output);
@@ -86,7 +86,7 @@ class Loader {
 		if ( is_array($filenames) ) {
 			/* its an array so we have to figure out which one the dev wants */
 			foreach ( $filenames as $filename ) {
-				if ( self::template_exists($filename) ) {
+				if ( static::template_exists($filename) ) {
 					return $filename;
 				}
 			}
@@ -261,27 +261,27 @@ class Loader {
 		return $twig;
 	}
 
-	public function clear_cache_timber( $cache_mode = self::CACHE_USE_DEFAULT ) {
+	public function clear_cache_timber( $cache_mode = static::CACHE_USE_DEFAULT ) {
 		//_transient_timberloader
 		$object_cache = false;
 		if ( isset($GLOBALS['wp_object_cache']) && is_object($GLOBALS['wp_object_cache']) ) {
 			$object_cache = true;
 		}
 		$cache_mode = $this->_get_cache_mode($cache_mode);
-		if ( self::CACHE_TRANSIENT === $cache_mode ) {
+		if ( static::CACHE_TRANSIENT === $cache_mode ) {
 			global $wpdb;
 			$query = $wpdb->prepare("DELETE FROM $wpdb->options WHERE option_name LIKE '%s'", '_transient_timberloader_%');
 			$wpdb->query($query);
 			return true;
-		} else if ( self::CACHE_SITE_TRANSIENT === $cache_mode ) {
+		} else if ( static::CACHE_SITE_TRANSIENT === $cache_mode ) {
 			global $wpdb;
 			$query = $wpdb->prepare("DELETE FROM $wpdb->options WHERE option_name LIKE '%s'", '_transient_timberloader_%');
 			$wpdb->query($query);
 			return true;
-		} else if ( self::CACHE_OBJECT === $cache_mode && $object_cache ) {
+		} else if ( static::CACHE_OBJECT === $cache_mode && $object_cache ) {
 			global $wp_object_cache;
-			if ( isset($wp_object_cache->cache[self::CACHEGROUP]) ) {
-				unset($wp_object_cache->cache[self::CACHEGROUP]);
+			if ( isset($wp_object_cache->cache[static::CACHEGROUP]) ) {
+				unset($wp_object_cache->cache[static::CACHEGROUP]);
 				return true;
 			}
 		}
@@ -293,7 +293,7 @@ class Loader {
 		$twig->clearCacheFiles();
 		$cache = $twig->getCache();
 		if ( $cache ) {
-			self::rrmdir($twig->getCache());
+			static::rrmdir($twig->getCache());
 			return true;
 		}
 		return false;
@@ -312,7 +312,7 @@ class Loader {
 		$files = glob($dirPath.'*', GLOB_MARK);
 		foreach ( $files as $file ) {
 			if ( is_dir($file) ) {
-				self::rrmdir($file);
+				static::rrmdir($file);
 			} else {
 				unlink($file);
 			}
@@ -339,7 +339,7 @@ class Loader {
 	 * @param string $cache_mode
 	 * @return bool
 	 */
-	public function get_cache( $key, $group = self::CACHEGROUP, $cache_mode = self::CACHE_USE_DEFAULT ) {
+	public function get_cache( $key, $group = static::CACHEGROUP, $cache_mode = static::CACHE_USE_DEFAULT ) {
 		$object_cache = false;
 
 		if ( isset($GLOBALS['wp_object_cache']) && is_object($GLOBALS['wp_object_cache']) ) {
@@ -350,12 +350,12 @@ class Loader {
 
 		$value = false;
 
-		$trans_key = substr($group.'_'.$key, 0, self::TRANS_KEY_LEN);
-		if ( self::CACHE_TRANSIENT === $cache_mode ) {
+		$trans_key = substr($group.'_'.$key, 0, static::TRANS_KEY_LEN);
+		if ( static::CACHE_TRANSIENT === $cache_mode ) {
 					$value = get_transient($trans_key);
-		} elseif ( self::CACHE_SITE_TRANSIENT === $cache_mode ) {
+		} elseif ( static::CACHE_SITE_TRANSIENT === $cache_mode ) {
 					$value = get_site_transient($trans_key);
-		} elseif ( self::CACHE_OBJECT === $cache_mode && $object_cache ) {
+		} elseif ( static::CACHE_OBJECT === $cache_mode && $object_cache ) {
 					$value = wp_cache_get($key, $group);
 		}
 
@@ -370,7 +370,7 @@ class Loader {
 	 * @param string $cache_mode
 	 * @return string|boolean
 	 */
-	public function set_cache( $key, $value, $group = self::CACHEGROUP, $expires = 0, $cache_mode = self::CACHE_USE_DEFAULT ) {
+	public function set_cache( $key, $value, $group = static::CACHEGROUP, $expires = 0, $cache_mode = static::CACHE_USE_DEFAULT ) {
 		$object_cache = false;
 
 		if ( isset($GLOBALS['wp_object_cache']) && is_object($GLOBALS['wp_object_cache']) ) {
@@ -381,14 +381,14 @@ class Loader {
 					$expires = 0;
 		}
 
-		$cache_mode = self::_get_cache_mode($cache_mode);
-		$trans_key = substr($group.'_'.$key, 0, self::TRANS_KEY_LEN);
+		$cache_mode = static::_get_cache_mode($cache_mode);
+		$trans_key = substr($group.'_'.$key, 0, static::TRANS_KEY_LEN);
 
-		if ( self::CACHE_TRANSIENT === $cache_mode ) {
+		if ( static::CACHE_TRANSIENT === $cache_mode ) {
 					set_transient($trans_key, $value, $expires);
-		} elseif ( self::CACHE_SITE_TRANSIENT === $cache_mode ) {
+		} elseif ( static::CACHE_SITE_TRANSIENT === $cache_mode ) {
 					set_site_transient($trans_key, $value, $expires);
-		} elseif ( self::CACHE_OBJECT === $cache_mode && $object_cache ) {
+		} elseif ( static::CACHE_OBJECT === $cache_mode && $object_cache ) {
 					wp_cache_set($key, $value, $group, $expires);
 		}
 
@@ -400,13 +400,13 @@ class Loader {
 	 * @return string
 	 */
 	private function _get_cache_mode( $cache_mode ) {
-		if ( empty($cache_mode) || self::CACHE_USE_DEFAULT === $cache_mode ) {
+		if ( empty($cache_mode) || static::CACHE_USE_DEFAULT === $cache_mode ) {
 			$cache_mode = $this->cache_mode;
 		}
 
-		// Fallback if self::$cache_mode did not get a valid value
-		if ( !in_array($cache_mode, self::$cache_modes) ) {
-			$cache_mode = self::CACHE_OBJECT;
+		// Fallback if static::$cache_mode did not get a valid value
+		if ( !in_array($cache_mode, static::$cache_modes) ) {
+			$cache_mode = static::CACHE_OBJECT;
 		}
 
 		return $cache_mode;
